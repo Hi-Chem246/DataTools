@@ -47,18 +47,20 @@ if __name__ == '__main__':
         trigger_times = npz_file['trigger_time']
         trigger_types = npz_file['trigger_type']
         hit_triggers = npz_file['digi_hit_trigger']
-        total_rows += hit_triggers.shape[0]
-        event_triggers = np.full(hit_triggers.shape[0], np.nan)
-        for i, (times, types, hit_trigs) in enumerate(zip(trigger_times, trigger_types, hit_triggers)):
-            good_triggers = np.where(types == 0)[0]
-            if len(good_triggers) == 0:
+        hit_times = npz_file['digi_hit_time']
+        total_rows += hit_triggers.shape[0] 
+        event_triggers = np.full(hit_triggers.shape[0], np.nan) 
+        for i, (times, types, hit_trigs, hit_time) in enumerate(zip(trigger_times, trigger_types, hit_triggers, hit_times)):
+            good_triggers = np.where(types==0)[0]
+            if len(good_triggers)==0:
                 continue
             first_trigger = good_triggers[np.argmin(times[good_triggers])]
-            nhits = np.count_nonzero(hit_trigs == first_trigger)
+            nhits = np.count_nonzero(hit_trigs==first_trigger)
+            ngoodhits = np.count_nonzero(np.where((hit_trigs==first_trigger) & (hit_time < 1900))[0])
             total_hits += nhits
             if nhits >= min_hits:
                 event_triggers[i] = first_trigger
-                good_hits += nhits
+                good_hits += ngoodhits
                 good_rows += 1
         file_event_triggers[input_file] = event_triggers
 
@@ -159,7 +161,7 @@ if __name__ == '__main__':
 
         for i, (trigs, times, charges, pmts) in enumerate(zip(hit_triggers, hit_times, hit_charges, hit_pmts)):
             dset_event_hit_index[offset+i] = hit_offset
-            hit_indices = np.where(trigs == event_triggers[i])[0]
+            hit_indices = np.where((trigs == event_triggers[i]) & (times < 1900))[0]
             hit_offset_next += len(hit_indices)
             dset_hit_time[hit_offset:hit_offset_next] = times[hit_indices]
             dset_hit_charge[hit_offset:hit_offset_next] = charges[hit_indices]
