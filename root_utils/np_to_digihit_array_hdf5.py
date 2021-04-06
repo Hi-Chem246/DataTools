@@ -56,7 +56,7 @@ if __name__ == '__main__':
                 continue
             first_trigger = good_triggers[np.argmin(times[good_triggers])]
             nhits = np.count_nonzero(hit_trigs==first_trigger)
-            ngoodhits = np.count_nonzero(np.where((hit_trigs==first_trigger) & (hit_time < 1900))[0])
+            ngoodhits = np.count_nonzero((hit_trigs==first_trigger) & (hit_time < 1900))
             total_hits += nhits
             if nhits >= min_hits:
                 event_triggers[i] = first_trigger
